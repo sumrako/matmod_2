@@ -96,16 +96,11 @@
     <property name="title">
      <string>Файл</string>
     </property>
-    <addaction name="action_2"/>
-    <addaction name="action_3"/>
-    <addaction name="action_4"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
      <string>Параметры</string>
     </property>
-    <addaction name="action_5"/>
-    <addaction name="action_6"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">

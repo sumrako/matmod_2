@@ -1,3 +1,4 @@
+import numpy as np
 from PyQt6.QtCore import QAbstractTableModel, Qt
 
 
@@ -18,8 +19,11 @@ class NumpyModel(QAbstractTableModel):
                 value = self._data[index.row(), index.column()]
                 return str(value)
 
+    def numpy_data(self) -> np.ndarray:
+        return np.array(self._data)
+
     def setData(self, index, value, role):
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             try:
                 value = int(value)
             except ValueError:
@@ -29,4 +33,4 @@ class NumpyModel(QAbstractTableModel):
         return False
 
     def flags(self, index):
-        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag
+        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable

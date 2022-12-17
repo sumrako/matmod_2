@@ -25,7 +25,7 @@ class NumpyModel(QAbstractTableModel):
     def setData(self, index, value, role):
         if role == Qt.ItemDataRole.EditRole:
             try:
-                value = int(value)
+                value = float(value)
             except ValueError:
                 return False
             self._data[index.row(), index.column()] = value

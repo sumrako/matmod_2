@@ -8,6 +8,7 @@ authors = ["Andrei Arnautov <aleksejtalitej@gmail.com>"]
 python = "^3.9"
 PyQt6 = "^6.4.0"
 matplotlib = "^3.6.1"
+phaseportrait = "^1.1.2"
 
 [tool.poetry.dev-dependencies]
 

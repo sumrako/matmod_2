@@ -2,7 +2,7 @@ import numpy as np
 
 
 def dF(N, M, a, b, d, c):
-    return M * (b + d * N), N * (a + c * M)
+    return N * (a + c * M), M * (b + d * N)
     # return a + c * M + d * M, b + c * N + d * N
 
 
@@ -30,22 +30,34 @@ def generate_default_interactions_data(count: int):
 
 
 class PopulationInteractionModel:
-    def __init__(self, a: np.ndarray, B: np.ndarray, N: np.ndarray, ht: int = 1):
+    def __init__(self, a: np.ndarray, B: np.ndarray, N: np.ndarray):
         self.a = a
         self.B = B
-        self.beginN = np.float_(N)
-        self.N = np.float_(N)
-        # print(self.N)
-        self.ht = ht
+        # self.curN = np.copy(N)
+        # self.curN = np.float_(self.curN)
+        self.beginN = N
+        self.N_matrix = None
 
-    def get_N_after_step(self) -> np.ndarray:
-        for i in range(len(self.N)):
-            beta_array = np.array([self.B[i, j] * self.N[j] * self.N[i] for j in range(len(self.N))])
-            sum_ = np.sum(beta_array)
+    def get_N_matrix(self, time: int = 1000, ht: int = 1) -> np.ndarray:
+        self.reset_count(time, ht)
+        for k in range(1, int(time / ht) + 1):
+            for i in range(len(self.beginN)):
+                beta_array = np.array([self.B[i, j] * self.N_matrix[j, k-1] * self.N_matrix[i, k-1]
+                                       for j in range(len(self.beginN))])
+                sum_ = np.sum(beta_array)
+                self.N_matrix[i, k] = self.N_matrix[i, k-1] + ht * (self.a[i] * self.N_matrix[i, k-1] + sum_)
+        return self.N_matrix
 
-            self.N[i] += self.ht * (self.a[i] * self.N[i] + sum_)
+    def set_a(self, a: np.ndarray):
+        self.a = a
 
-        return self.N
+    def set_B(self, B: np.ndarray):
+        self.B = B
 
-    def reset_count(self):
-        self.N = self.beginN
+    def set_N(self, N: np.ndarray):
+        self.beginN = N
+
+    def reset_count(self, time: int, step: int):
+        self.N_matrix = np.zeros((len(self.beginN), int(time / step) + 1), dtype=float)
+        self.N_matrix[:, 0] = self.beginN
+

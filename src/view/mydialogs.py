@@ -5,6 +5,7 @@ from PyQt6.QtCore import pyqtSlot
 from model.tablemodel import NumpyModel
 from model.populations_model import generate_default_popul_data, generate_default_interactions_data
 from PyQt6.uic import loadUi
+from view.phaseportraitwidget import PhasePortraitWidget
 
 
 class ParamDialog(QDialog):
@@ -30,8 +31,8 @@ class ParamDialog(QDialog):
         self.form.addRow(self.buttonBox)
 
     def sendForm(self):
-        self.parent.step = float(self.step.text())
-        self.parent.time = float(self.time.text())
+        self.parent.step = int(self.step.text())
+        self.parent.time = int(self.time.text())
 
         self.close()
 
@@ -41,9 +42,15 @@ class AxesDialog(QDialog):
         super(AxesDialog, self).__init__(parent)
         self.parent = parent
 
+        self.setWindowTitle("Выберете индексы взаимодействующих популяций")
         page_layout = QVBoxLayout(self)
+        first_layout = QHBoxLayout()
+        second_layout = QHBoxLayout()
         self.box_1 = QComboBox()
         self.box_2 = QComboBox()
+
+        label1 = QLabel("Индекс первой популяции")
+        label2 = QLabel("Индекс второй популяции")
 
         index_items = [str(i) for i in range(parent.count_of_genus)]
         self.box_1.addItems(index_items)
@@ -52,27 +59,37 @@ class AxesDialog(QDialog):
         input_button = QPushButton("Ввести")
         input_button.clicked.connect(self.input)
 
-        page_layout.addWidget(self.box_1)
-        page_layout.addWidget(self.box_2)
+        first_layout.addWidget(label1)
+        first_layout.addWidget(self.box_1)
+        second_layout.addWidget(label2)
+        second_layout.addWidget(self.box_2)
+
+        page_layout.addLayout(first_layout)
+        page_layout.addLayout(second_layout)
         page_layout.addWidget(input_button)
 
     @pyqtSlot()
     def input(self):
-        #Добавить проверку на неодинаковость
+        index1 = self.box_1.currentIndex()
+        index2 = self.box_2.currentIndex()
+        if index1 == index2:
+            self.close()
+            return
         self.parent.index_1 = self.box_1.currentIndex()
         self.parent.index_2 = self.box_2.currentIndex()
 
         self.close()
 
 
-class PhaseDialog(QDialog):
-    def __init__(self, parent=None):
-        super(PhaseDialog, self).__init__(parent)
+class PhasePortraitDialog(QDialog):
+    def __init__(self, parent, a, b, c, d):
+        super(PhasePortraitDialog, self).__init__(parent)
         # Load the dialog's GUI
-        loadUi("../assets/dialog.ui", self)
-        self.setWindowTitle("Фазовая кривая")
+        # loadUi("../assets/dialog.ui", self)
+        self.setWindowTitle("Фазовой портрет")
+        self.setFixedSize(640, 480)
+        self.phase_widget = PhasePortraitWidget(a, b, c, d, parent=self)
 
-        self.PhasePortraitWidget.canvas.draw()
 
 
 class KindDialog(QDialog):
@@ -116,10 +133,13 @@ class KindDialog(QDialog):
     @pyqtSlot()
     def input(self):
         popul_data = self.popul_table.model().numpy_data()
-        self.parent.alpha_data = popul_data[:, 1]
-        self.parent.popul_count_data = np.int_(popul_data[:, 0])
+        self.parent.a = popul_data[:, 1]
+        self.parent.N = np.int_(popul_data[:, 0])
+        self.parent.B = self.interaction_table.model().numpy_data()
 
-        self.parent.interactions_data = self.interaction_table.model().numpy_data()
+        self.parent.model.set_a(popul_data[:, 1])
+        self.parent.model.set_N(popul_data[:, 0])
+        self.parent.model.set_B(self.interaction_table.model().numpy_data())
         self.close()
 
 
